@@ -16,7 +16,7 @@ language: java
 jdk:
  - oraclejdk8
 ```
-## TT: this runs CI but its not good enough! we're throwing away the artifact and we're not building in a window for staging. This is Continuous Delivery/Deployment: we want to potentially release to production on *every* git push!! this means that every build is potentially releasable. This means we have to change the way we think about versioning. So far we've been using Mavens naive notion of `SNAPSHOTs`, but this no longer applies. Every build that makes it into the promoted repository on Artifactory could be a released build. We also don't want to invite the nightmare of Maven release plugin since we don't need to have a formal maven step for release. Well let the process do it. But we can't release a non-final version at the end of the line, either! So, Let's revisit the build and change where it derives its version number:
+> TT: this runs CI but its not good enough! we're throwing away the artifact and we're not building in a window for staging. This is Continuous Delivery/Deployment: we want to potentially release to production on *every* git push!! this means that every build is potentially releasable. This means we have to change the way we think about versioning. So far we've been using Mavens naive notion of `SNAPSHOTs`, but this no longer applies. Every build that makes it into the promoted repository on Artifactory could be a released build. We also don't want to invite the nightmare of Maven release plugin since we don't need to have a formal maven step for release. Well let the process do it. But we can't release a non-final version at the end of the line, either! So, Let's revisit the build and change where it derives its version number:
 
 In Maven it becomes:
 ```
@@ -123,7 +123,7 @@ http -a admin POST https://cloudnativejava.artifactoryonline.com/cloudnativejava
 * once it's in release repository on artifactory, let's (also release to bintray, though this might be optional with distribution repositories) AND publish from bintray. We want to make sure that when we release to bintray that there is a webhook in place to automatically publish to CF and do blue/green builds.
 
 
-## TT: why do we need another repisitory like bintrary if artifactory is a repository and we already have the artifacts are in the release repository? Well, you COULD. But there are some drawbacks. On-Prem Artifactory isn't meant to handle the load of binary distributation. It doesnt have knowledge of CDNs, etc. Also, short of harvesting the logs, you don't have a builtin single pane of glass experience showing you downlaods and stats about the binaries. Enter bintray, a hosted distribution hub.
+> TT: why do we need another repisitory like bintrary if artifactory is a repository and we already have the artifacts are in the release repository? Well, you COULD. But there are some drawbacks. On-Prem Artifactory isn't meant to handle the load of binary distributation. It doesnt have knowledge of CDNs, etc. Also, short of harvesting the logs, you don't have a builtin single pane of glass experience showing you downlaods and stats about the binaries. Enter bintray, a hosted distribution hub.
 
 Now, let's release to bintray and publish release to the world (Hopefully, we'll be able to skip this first `http` call because JFrog will have announced distribution repositories)
 
