@@ -1,5 +1,5 @@
 language: java
-script: ./mvnw deploy && ./bin/cf.sh
+script: ./mvnw deploy -Dbuild.number=${TRAVIS_BUILD_NUMBER} && ./bin/cf.sh
 install: echo 'installing'
 jdk:
   - oraclejdk8
