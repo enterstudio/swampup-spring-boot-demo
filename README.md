@@ -2,15 +2,20 @@
 
 > this code [lives on GitHub](https://github.com/jbaruch/swampup-spring-boot-demo)
 
+## the Micro Microservice 
+
 * josh builds a REALLY micro microservice ("Hello World!") a simple spring boot rest app
 * josh writes a simple unit test to test the REST endpoint
 * josh makes it executable == true (reproducible deliverable software that requires only a JVM to run!)
 * josh chucks it into github
 
+##   Continuous Integration for Feedback
+
 > TT: were not done! the whole point of a microservice is to support ease of iteration and agility. in order  to have that we need a fast feedback loop. We need continuous integration. We need to know that this software doesn't just work on my machine.
 
 * baruch says we need continuous integration.
 * we add a basic default `.travis.yml` to project and add repo on Travis.org
+
 ```
 language: java
 jdk:
@@ -22,7 +27,9 @@ In Maven it becomes:
 ```
 <version>${build.number}</version>
 ```
+
 and then we specify a default value for this property in the Maven build:
+
 ```
 <build.number>0.0.1-SNAPSHOT</build.number>
 ```
@@ -98,9 +105,9 @@ script: ./mvnw deploy -Dbuild.number=${TRAVIS_BUILD_NUMBER}
 install: echo installing
 ```
 
-* this will successfully run tests, deploy to artifactory.
+## Supporting QA and Smoke Tests 
 
-* what about staging and QA? and smoke tests? now we need to *also* publish to CF so somebody can then review it in QA/staging and - if it's good - promote it. let's modify travis.yml:
+* this will successfully run tests, deploy to artifactory. what about staging and QA? and smoke tests? now we need to *also* publish to CF so somebody can then review it in QA/staging and - if it's good - promote it. let's modify travis.yml:
 
 ```
 language: java
@@ -111,7 +118,7 @@ jdk:
 ```
 
 
-# BIG GREEN BUTTON TERRITORY
+## To Production!
 
 * Somebody in QA reviews the change, accepts it (perhaps in Pivotal Tracker!), then PT should somehow call the following REST call to promote the build from `libs-staging-local` to `libs-release-local`
 
