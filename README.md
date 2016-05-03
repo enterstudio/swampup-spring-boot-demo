@@ -7,7 +7,7 @@
 * josh makes it executable == true (reproducible deliverable software that requires only a JVM to run!)
 * josh chucks it into github
 
-## TT: were not done! the whole point of a microservice is to support ease of iteration and agility. in order  to have that we need a fast feedback loop. We need continuous integration. We need to know that this software doesn't just work on my machine.
+> TT: were not done! the whole point of a microservice is to support ease of iteration and agility. in order  to have that we need a fast feedback loop. We need continuous integration. We need to know that this software doesn't just work on my machine.
 
 * baruch says we need continuous integration.
 * we add a basic default `.travis.yml` to project and add repo on Travis.org
@@ -40,6 +40,7 @@ install: echo installing
 
 * we need to push the artifact to artifactory
 * add Artifactory Maven plugin to Maven Build and add environment variables for authentication. This wil be configured on local machines and in Travis
+
 ```
         <plugin>
             <groupId>org.jfrog.buildinfo</groupId>
@@ -79,7 +80,7 @@ install: echo installing
 ```
 * make sure local environment *AND* Travis have `ARTIFACTORY_USERNAME` and `ARTIFACTORY_PASSWORD`
 
-** PROBLEM: Travis doesn't let us override the default Maven repository settings.  Luckily, start.spring.io gives us a Maven wrapper setup that we can tweak to use our own Maven distribution and give us reproducible builds. This maven distribution will be aware of our Artifactory repository (which in turn knows about JCenter, Maven central, company repositories, etc). We can use Maven wrapper to download a customized Maven distribution that has a `.settings.xml` that knows about my custom Artifactory. We support this goal by DL'ing the Maven distribution listed in the Maven wrapper's `wrapper.properties`, unpacking it, changing the `settings.xml` that's within to point to our Artifactory, then deploying that re-packaged .zip distribution to our artifactory instance, then changing the `distributionURL` to point to our artifactory.
+> TT: Travis doesn't let us override the default Maven repository settings.  Luckily, start.spring.io gives us a Maven wrapper setup that we can tweak to use our own Maven distribution and give us reproducible builds. This maven distribution will be aware of our Artifactory repository (which in turn knows about JCenter, Maven central, company repositories, etc). We can use Maven wrapper to download a customized Maven distribution that has a `.settings.xml` that knows about my custom Artifactory. We support this goal by DL'ing the Maven distribution listed in the Maven wrapper's `wrapper.properties`, unpacking it, changing the `settings.xml` that's within to point to our Artifactory, then deploying that re-packaged .zip distribution to our artifactory instance, then changing the `distributionURL` to point to our artifactory.
 
 ```
 distributionUrl=https://cloudnativejava.artifactoryonline.com/cloudnativejava/distributions/apache-maven-3.3.3-bin.zip
