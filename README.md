@@ -130,6 +130,7 @@ http -a admin POST https://cloudnativejava.artifactoryonline.com/cloudnativejava
 
 * once it's in release repository on artifactory, let's (also release to bintray, though this might be optional with distribution repositories) AND publish from bintray. We want to make sure that when we release to bintray that there is a webhook in place to automatically publish to CF and do blue/green builds.
 
+* configure a release repository on artifactory. goto admin -> distribution -> add a new distribution repository. then, authenticate with bintray. 
 
 > TT: why do we need another repisitory like bintrary if artifactory is a repository and we already have the artifacts are in the release repository? Well, you COULD. But there are some drawbacks. On-Prem Artifactory isn't meant to handle the load of binary distributation. It doesnt have knowledge of CDNs, etc. Also, short of harvesting the logs, you don't have a builtin single pane of glass experience showing you downlaods and stats about the binaries. Enter bintray, a hosted distribution hub.
 
