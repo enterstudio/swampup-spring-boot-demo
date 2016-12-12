@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 CF_USER=${1:-$CF_USER}
 CF_PASSWORD=${2:-$CF_PASSWORD}
 CF_ORG=${3:-$CF_ORG}
@@ -27,4 +26,4 @@ function validate_cf(){
 }
 
 validate_cf
-cf push -b https://github.com/cloudfoundry/java-buildpack.git -p target/*jar swampup 
+cf push -b https://github.com/cloudfoundry/java-buildpack.git -p target/*jar cdlive

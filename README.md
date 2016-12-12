@@ -2,7 +2,7 @@
 
 > this code [lives on GitHub](https://github.com/jbaruch/swampup-spring-boot-demo)
 
-## the Micro Microservice 
+## the Micro Microservice
 
 * josh builds a REALLY micro microservice ("Hello World!") a simple spring boot rest app
 * josh writes a simple unit test to test the REST endpoint
@@ -66,8 +66,8 @@ install: echo installing
                         </deployProperties>
                         <publisher>
                             <contextUrl>https://cloudnativejava.artifactoryonline.com/cloudnativejava</contextUrl>
-                            <username>${env.ARTIFACTORY_USERNAME}</username>
-                            <password>${env.ARTIFACTORY_PASSWORD}</password>
+                            <username>${env.ARTIFACTORY_USER}</username>
+                            <password>${env.ARTIFACTORY_API_KEY}</password>
                             <repoKey>libs-staging-local</repoKey>
                             <snapshotRepoKey>libs-snapshot-local</snapshotRepoKey>
                         </publisher>
@@ -85,7 +85,7 @@ install: echo installing
         </plugin>
 
 ```
-* make sure local environment *AND* Travis have `ARTIFACTORY_USERNAME` and `ARTIFACTORY_PASSWORD`
+* make sure local environment *AND* Travis have `ARTIFACTORY_USERNAME` and `ARTIFACTORY_API_KEY`
 
 > TT: Travis doesn't let us override the default Maven repository settings.  Luckily, start.spring.io gives us a Maven wrapper setup that we can tweak to use our own Maven distribution and give us reproducible builds. This maven distribution will be aware of our Artifactory repository (which in turn knows about JCenter, Maven central, company repositories, etc). We can use Maven wrapper to download a customized Maven distribution that has a `.settings.xml` that knows about my custom Artifactory. We support this goal by DL'ing the Maven distribution listed in the Maven wrapper's `wrapper.properties`, unpacking it, changing the `settings.xml` that's within to point to our Artifactory, then deploying that re-packaged .zip distribution to our artifactory instance, then changing the `distributionURL` to point to our artifactory.
 
@@ -93,7 +93,11 @@ install: echo installing
 distributionUrl=https://cloudnativejava.artifactoryonline.com/cloudnativejava/distributions/apache-maven-3.3.3-bin.zip
 ```
 
-We logged into Artifactory, added a new repository called "distributions", then clicked 'Deploy' button. Go to the deployed distribution, copy the 'Download' link and then point wrapper.settings to that.
+We logged into Artifactory, went to artifactory repositorry browser, then clicked on distributions. Then, clicked on Deploy and uploaded a Maven distributions that's been customized to have the correct Maven settings.
+
+We were able to generate those settings by going to any Maven repository, for example 'libs-release-local', clicking "Set Me Up", and then choosing "Maven" as the tool, and selecting Generate Maven Settings. It'll prompt you to confirm the setup. Click "Generate Settings". Then copy resulting settings to clipboard and paste in $MAVEN_DISTRO/conf/settings.xml.
+
+
 
 * now `travis.yml` is:
 
@@ -105,7 +109,7 @@ script: ./mvnw deploy -Dbuild.number=${TRAVIS_BUILD_NUMBER}
 install: echo installing
 ```
 
-## Supporting QA and Smoke Tests 
+## Supporting QA and Smoke Tests
 
 * this will successfully run tests, deploy to artifactory. what about staging and QA? and smoke tests? now we need to *also* publish to CF so somebody can then review it in QA/staging and - if it's good - promote it. let's modify travis.yml:
 
@@ -130,7 +134,7 @@ http -a admin POST https://cloudnativejava.artifactoryonline.com/cloudnativejava
 
 * once it's in release repository on artifactory, let's (also release to bintray, though this might be optional with distribution repositories) AND publish from bintray. We want to make sure that when we release to bintray that there is a webhook in place to automatically publish to CF and do blue/green builds.
 
-* configure a release repository on artifactory. goto admin -> distribution -> add a new distribution repository. then, authenticate with bintray. 
+* configure a release repository on artifactory. goto admin -> distribution -> add a new distribution repository. then, authenticate with bintray.
 
 > TT: why do we need another repisitory like bintrary if artifactory is a repository and we already have the artifacts are in the release repository? Well, you COULD. But there are some drawbacks. On-Prem Artifactory isn't meant to handle the load of binary distributation. It doesnt have knowledge of CDNs, etc. Also, short of harvesting the logs, you don't have a builtin single pane of glass experience showing you downlaods and stats about the binaries. Enter bintray, a hosted distribution hub.
 
