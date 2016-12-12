@@ -65,9 +65,9 @@ install: echo installing
                             <build.vcsRevision>{{TRAVIS_COMMIT}}</build.vcsRevision>
                         </deployProperties>
                         <publisher>
-                            <contextUrl>https://cloudnativejava.artifactoryonline.com/cloudnativejava</contextUrl>
+                            <contextUrl>https://cloudnativejava.jfrog.io/cloudnativejava</contextUrl>
                             <username>${env.ARTIFACTORY_USERNAME}</username>
-                            <password>${env.ARTIFACTORY_PASSWORD}</password>
+                            <password>${env.ARTIFACTORY_API_KEY}</password>
                             <repoKey>libs-staging-local</repoKey>
                             <snapshotRepoKey>libs-snapshot-local</snapshotRepoKey>
                         </publisher>
@@ -85,12 +85,12 @@ install: echo installing
         </plugin>
 
 ```
-* make sure local environment *AND* Travis have `ARTIFACTORY_USERNAME` and `ARTIFACTORY_PASSWORD`
+* make sure local environment *AND* Travis have `ARTIFACTORY_USERNAME` and `ARTIFACTORY_API_KEY`
 
 > TT: Travis doesn't let us override the default Maven repository settings.  Luckily, start.spring.io gives us a Maven wrapper setup that we can tweak to use our own Maven distribution and give us reproducible builds. This maven distribution will be aware of our Artifactory repository (which in turn knows about JCenter, Maven central, company repositories, etc). We can use Maven wrapper to download a customized Maven distribution that has a `.settings.xml` that knows about my custom Artifactory. We support this goal by DL'ing the Maven distribution listed in the Maven wrapper's `wrapper.properties`, unpacking it, changing the `settings.xml` that's within to point to our Artifactory, then deploying that re-packaged .zip distribution to our artifactory instance, then changing the `distributionURL` to point to our artifactory.
 
 ```
-distributionUrl=https://cloudnativejava.artifactoryonline.com/cloudnativejava/distributions/apache-maven-3.3.3-bin.zip
+distributionUrl=https://cloudnativejava.jfrog.io/cloudnativejava/distributions/apache-maven-3.3.3-bin.zip
 ```
 
 We logged into Artifactory, added a new repository called "distributions", then clicked 'Deploy' button. Go to the deployed distribution, copy the 'Download' link and then point wrapper.settings to that.
