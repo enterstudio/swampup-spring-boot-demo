@@ -66,7 +66,9 @@ install: echo installing
                         </deployProperties>
                         <publisher>
                             <contextUrl>https://cloudnativejava.artifactoryonline.com/cloudnativejava</contextUrl>
-                            <username>${env.ARTIFACTORY_USER}</username>
+
+                            <contextUrl>https://cloudnativejava.jfrog.io/cloudnativejava</contextUrl>
+                            <username>${env.ARTIFACTORY_USERNAME}</username>
                             <password>${env.ARTIFACTORY_API_KEY}</password>
                             <repoKey>libs-staging-local</repoKey>
                             <snapshotRepoKey>libs-snapshot-local</snapshotRepoKey>
@@ -90,7 +92,7 @@ install: echo installing
 > TT: Travis doesn't let us override the default Maven repository settings.  Luckily, start.spring.io gives us a Maven wrapper setup that we can tweak to use our own Maven distribution and give us reproducible builds. This maven distribution will be aware of our Artifactory repository (which in turn knows about JCenter, Maven central, company repositories, etc). We can use Maven wrapper to download a customized Maven distribution that has a `.settings.xml` that knows about my custom Artifactory. We support this goal by DL'ing the Maven distribution listed in the Maven wrapper's `wrapper.properties`, unpacking it, changing the `settings.xml` that's within to point to our Artifactory, then deploying that re-packaged .zip distribution to our artifactory instance, then changing the `distributionURL` to point to our artifactory.
 
 ```
-distributionUrl=https://cloudnativejava.artifactoryonline.com/cloudnativejava/distributions/apache-maven-3.3.3-bin.zip
+distributionUrl=https://cloudnativejava.jfrog.io/cloudnativejava/distributions/apache-maven-3.3.3-bin.zip
 ```
 
 We logged into Artifactory, went to artifactory repositorry browser, then clicked on distributions. Then, clicked on Deploy and uploaded a Maven distributions that's been customized to have the correct Maven settings.
