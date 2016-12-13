@@ -18,8 +18,7 @@
 
 ```
 language: java
-jdk:
- - oraclejdk8
+jdk: oraclejdk8
 ```
 > TT: this runs CI but its not good enough! we're throwing away the artifact and we're not building in a window for staging. This is Continuous Delivery/Deployment: we want to potentially release to production on *every* git push!! this means that every build is potentially releasable. This means we have to change the way we think about versioning. So far we've been using Mavens naive notion of `SNAPSHOTs`, but this no longer applies. Every build that makes it into the promoted repository on Artifactory could be a released build. We also don't want to invite the nightmare of Maven release plugin since we don't need to have a formal maven step for release. Well let the process do it. But we can't release a non-final version at the end of the line, either! So, Let's revisit the build and change where it derives its version number:
 
@@ -38,8 +37,7 @@ When we run the code on Travis, though, we'll override the build version with th
 
 ```
 language: java
-jdk:
- - oraclejdk8
+jdk: oraclejdk8
 script: ./mvnw deploy -Dbuild.number=${TRAVIS_BUILD_NUMBER}
 install: echo installing
 
@@ -111,17 +109,12 @@ env:
   - secure: kLZ6mWu79U39hlZyiMYwe1vj7asLJ/s57AjH5Hanorq8e4biXe1Mx6ZTZRRXDRizmps6liOJFsZLgIss/SECf3uiNBNb034Df7Js2dUPWBohZJOV6rA5IaHfgQVPg93oCBvczB3uqTammLs+c9yuQ/75npQtUAtHz+hrLm37bTCprr2UHgucoDPVfMnP+f2XfcEnAxYtEZpmxiZuudhCLDoyyfA2IjHph93pNm6tAJ+XF9SgHTewWXjkr+USmT1cszniykOBSaib4ymwVrn1MjuGS3HbK4W6tRsFtAumRNoX1PM2LKjP9u+hl4ZM0CZ7fb1dCa8fzqiYFiORS+LyUshhd03tB92ukdypA6RvUmMFXLtWhg8Eh77k5B20mHoWvBJaQOIHF+ppPuVodPlbHkzR44BHl8eDK/MKSJK/aN1x/ZQNrEngOfUy3ToWpgO+neyTmkSUZ6yWDamiovo4Gy7Ny+SaQ926kOZjdRLIsGzgAsBbQdeRbGUdP7Qh6bbnAjYB3TcfB9U3b9mZNTJ9Vr0ivwHqmgElUjP9AH6xAILDybQ9gBoHlH4gObC2es2ogpkpPYVCiMLI3bHFoHnTp4ExVXFC2XMzk1T67lshHNzPVWct3EH9ONxWwHtRWUmpHaFnynLQqZHqQPjjyvnJh/KrDq3IlzfVmk/9unBZ/Pk=
 ```
 
-> TT: Travis doesn't let us override the default Maven repository settings.  Luckily, start.spring.io gives us a Maven wrapper setup that we can tweak to use our own Maven distribution and give us reproducible builds. This maven distribution will be aware of our Artifactory repository (which in turn knows about JCenter, Maven central, company repositories, etc). We can use Maven wrapper to download a customized Maven distribution that has a `.settings.xml` that knows about my custom Artifactory. We support this goal by DL'ing the Maven distribution listed in the Maven wrapper's `wrapper.properties`, unpacking it, changing the `settings.xml` that's within to point to our Artifactory, then deploying that re-packaged .zip distribution to our artifactory instance, then changing the `distributionURL` to point to our artifactory.
+> TT: Travis doesn't let us override the default Maven repository settings.  Luckily, start.spring.io gives us a Maven wrapper setup that we can tweak to use our own Maven distribution and give us reproducible builds. This maven distribution will be aware of our Artifactory repository (which in turn knows about JCenter, Maven central, company repositories, etc). We can use Maven wrapper to download a customized Maven distribution that has a `.settings.xml` that knows about my custom Artifactory. We support this goal by DL'ing the Maven distribution listed in the Maven wrapper's `wrapper.properties`, unpacking it, changing the `settings.xml` that's within to point to our Artifactory (We were able to generate those settings by going to any Maven repository, for example 'libs-release-local', clicking "Set Me Up", and then choosing "Maven" as the tool, and selecting Generate Maven Settings. It'll prompt you to confirm the setup. Click "Generate Settings". Then copy resulting settings to clipboard and paste in $MAVEN_DISTRO/conf/settings.xml.), then deploying that re-packaged .zip distribution to our artifactory instance (we logged into Artifactory, went to artifactory repository browser, then clicked on "distributions"- the repositorty for our custom Maven distribution. Then, clicked on Deploy and uploaded a Maven distributions that's been customized to have the correct Maven settings), then changing the `distributionURL` to point to our artifactory.
 
 ```
 
 distributionUrl=https://cloudnativejava.jfrog.io/cloudnativejava/distributions/apache-maven-3.3.3-bin.zip
 ```
-
-We logged into Artifactory, went to artifactory repositorry browser, then clicked on distributions. Then, clicked on Deploy and uploaded a Maven distributions that's been customized to have the correct Maven settings.
-
-We were able to generate those settings by going to any Maven repository, for example 'libs-release-local', clicking "Set Me Up", and then choosing "Maven" as the tool, and selecting Generate Maven Settings. It'll prompt you to confirm the setup. Click "Generate Settings". Then copy resulting settings to clipboard and paste in $MAVEN_DISTRO/conf/settings.xml.
-
 
 
 * now `travis.yml` is:
@@ -171,11 +164,12 @@ http -a admin POST https://cloudnativejava.artifactoryonline.com/cloudnativejava
 http -a joshlong POST https://api.bintray.com/content/swampup-cloud-native-java/maven/demo/9/publish
 ```
 
-We can even go further, and specify a webhook on release publishing that in turn cna do whatever we want, including blue/green CF deployments, like this:
+Now, we also need to release in CF. It is done by blue/green CF switch. Do we have a REST API for the switch? We don't, but we could! Josh is writing the app, and it's AMAZING. Now we have a REST API to call for the switch flip. We call it from the Bintray Deployment web hook.
+
 
 ```
 http -a joshlong POST https://api.bintray.com/webhooks/swampup-cloud-native-java/maven/demo/ \
     url=$MY_CUSTOM_BINTRAY_WEBHOOK_WHICH_WILL_BE_A_CF_APP_THAT_DOES_BLUE_GREEN_DEPLOY_OF_APP \
-    method=post
-
 ```
+
+Now when new version is released on Bintray (which means we depoyed!) we flip the switch and it goes live on CF as well.
