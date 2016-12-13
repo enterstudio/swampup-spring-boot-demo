@@ -89,9 +89,32 @@ install: echo installing
 ```
 * make sure local environment *AND* Travis have `ARTIFACTORY_USERNAME` and `ARTIFACTORY_API_KEY`
 
+here is an updated travis.yml with the valid, encrypted values as derived by saying: `travis encrypt ARTIFACTORY_API_KEY=... --add` and `travis encrypt CF_PASSWORD=... --add` while in the directory containing our .travis.yml file.
+
+```
+language: java
+jdk: oraclejdk8
+script: "./mvnw deploy -Dbuild.number=${TRAVIS_BUILD_NUMBER}"
+install: echo installing
+env:
+  global:
+
+  #  Artifactory (ARTIFACTORY_USERNAME && ARTIFACTORY_API_KEY)
+  - ARTIFACTORY_USERNAME=admin
+  - secure: W/HnrxsDRyG66QyRRBtLSgkCnL7DLMN5o8HQuJQCbEvCgh/X/SzHSW3f8vMXiRN4aECEvyn6OYN84EAb/5/BXC7DqqZX0nnvrQtHHZizaL5JfGgH0rF1rddr4RycZhFlcxZz/Yk1y0XQyRQdqfm9pv4FkoCUcpXgZiXYbuioA6KXuC1fHb86M8kF1q+DPkfktB/j1A3ir8h8vxTKRmDM4hLDwPY5mzCZ369QksVo4vTYwuLxXaOG0YiBWhTyqo/KsVsso92rKKnJ6Dauk1MjKVgndemaG8ivVMSale0RdSpfnR4hxkE3HKWGrkM1YmF8MvvOvMfzO0FoHhkr1dsGM1LaJhrdh5VD0h3W0Bf+xQvPx4uQqpAX6o/aoAXUmKpJxYIhJJH0/ZhAcvRVZ2SaMesvueuJSV3uxxEJZ01PnQgOuGDo94vtQ+sGh2xOPxNLA/E6lBizMKSGURGvaBHXrXPT4VWNT4a14CVvMPA3D1Y9gtXya5NY1eqPs//LnUSAN9c+mgEM9ghfoHe/BRkbADfDKokGlmiHofsluSHy+mTC0qaE2UaDxhqdAbVqGON1Fp4/sVHJ13N7P8vf7EpnGlmAuecL8+CpZlTHBQsnvHOaaeLl7W5WXRiT3DpvMclIZEvYt6+n/JjhWtxjanP71+36pI5286vRk8zDLgRitKg=
+
+  #  CloudFoundry
+  - CF_API=http://api.run.pivotal.io
+  - CF_SPACE=joshlong
+  - CF_ORG=platform-eng
+  - CF_USER=starbuxman@gmail.com
+  - secure: kLZ6mWu79U39hlZyiMYwe1vj7asLJ/s57AjH5Hanorq8e4biXe1Mx6ZTZRRXDRizmps6liOJFsZLgIss/SECf3uiNBNb034Df7Js2dUPWBohZJOV6rA5IaHfgQVPg93oCBvczB3uqTammLs+c9yuQ/75npQtUAtHz+hrLm37bTCprr2UHgucoDPVfMnP+f2XfcEnAxYtEZpmxiZuudhCLDoyyfA2IjHph93pNm6tAJ+XF9SgHTewWXjkr+USmT1cszniykOBSaib4ymwVrn1MjuGS3HbK4W6tRsFtAumRNoX1PM2LKjP9u+hl4ZM0CZ7fb1dCa8fzqiYFiORS+LyUshhd03tB92ukdypA6RvUmMFXLtWhg8Eh77k5B20mHoWvBJaQOIHF+ppPuVodPlbHkzR44BHl8eDK/MKSJK/aN1x/ZQNrEngOfUy3ToWpgO+neyTmkSUZ6yWDamiovo4Gy7Ny+SaQ926kOZjdRLIsGzgAsBbQdeRbGUdP7Qh6bbnAjYB3TcfB9U3b9mZNTJ9Vr0ivwHqmgElUjP9AH6xAILDybQ9gBoHlH4gObC2es2ogpkpPYVCiMLI3bHFoHnTp4ExVXFC2XMzk1T67lshHNzPVWct3EH9ONxWwHtRWUmpHaFnynLQqZHqQPjjyvnJh/KrDq3IlzfVmk/9unBZ/Pk=
+```
+
 > TT: Travis doesn't let us override the default Maven repository settings.  Luckily, start.spring.io gives us a Maven wrapper setup that we can tweak to use our own Maven distribution and give us reproducible builds. This maven distribution will be aware of our Artifactory repository (which in turn knows about JCenter, Maven central, company repositories, etc). We can use Maven wrapper to download a customized Maven distribution that has a `.settings.xml` that knows about my custom Artifactory. We support this goal by DL'ing the Maven distribution listed in the Maven wrapper's `wrapper.properties`, unpacking it, changing the `settings.xml` that's within to point to our Artifactory, then deploying that re-packaged .zip distribution to our artifactory instance, then changing the `distributionURL` to point to our artifactory.
 
 ```
+
 distributionUrl=https://cloudnativejava.jfrog.io/cloudnativejava/distributions/apache-maven-3.3.3-bin.zip
 ```
 
